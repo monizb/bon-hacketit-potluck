@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu&display=swap');
+
+
+.mainappbar {
+    background-color: white;
+    box-shadow: none;
+    border-bottom: 1px solid #e0e0e0;
+    text-align: left;
+    padding: 5px 15px;
+}
+
+.mainappbar p {
+    font-family: 'Roboto Mono', sans-serif;
+    font-size: 1.5rem;
+    color: #5F6368;
+    font-weight: bolder;
+    margin-left: 15px;
+}
+
+.bowl {
+    width: 40px;
+}
+
+.appbarhead {
+    display: flex;
+    align-items: center;
+}
+
+.landing-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #669FBD;
+    padding: 20px;
+}
+
+
+.landing-content {
+    color: white;
+    display: flex;
+}
+
+
+.landing-content h1 {
+    font-family: 'Ubuntu', sans-serif;
+    font-size: 3rem;
+    color: white;
+    font-weight: bolder;
+}
+
+
+.loginbtn {
+    background-color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 3px;
+    padding: 10px 20px;
+    font-size: 20px;
+}
