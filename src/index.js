@@ -9,7 +9,7 @@ ReactDOM.render(
   <Auth0Provider
     domain="cimplyfivesurveyapp.auth0.com"
     clientId="KsSz4hExuahXytm8RFt1rNGsLu6Bit2d"
-    redirectUri={window.location.origin}
+    redirectUri={window.location.origin + "/dashboard"}
   >
     <App />
   </Auth0Provider>,
