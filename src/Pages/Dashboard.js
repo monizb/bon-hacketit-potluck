@@ -46,7 +46,7 @@ function Dashboard() {
                 </div>
             </div>
             <div style={{ marginTop: "20px" }}>
-                {Object.values(pots).map((pot) => {
+                {pots !== null ? Object.values(pots).map((pot) => {
                     return (
                         <div className="pot" style={{
                             borderTop: "10px solid #669FBD",
@@ -59,10 +59,10 @@ function Dashboard() {
                             <p>{pot.description}</p>
                             <p>{pot.date}</p>
                             <p>{pot.time.join("-")}</p>
-                            <button className='profilebutton' style={{ backgroundColor: "#3AB37D" }} onClick={() => nav(pot.id)}>Register</button>
+                            <button className='profilebutton' style={{ backgroundColor: "#3AB37D" }} onClick={() => nav(pot.id)}>View</button>
                         </div>
                     )
-                })}
+                }) : <h1>No Pots</h1>}
             </div>
         </div>
     )

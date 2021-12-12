@@ -75,7 +75,9 @@ function New() {
                             name: user.name,
                             picture: user.picture,
                             recipe_id: recipe,
-                            recipe: JSON.stringify(data.hits[0].recipe)
+                            recipe_name: data.hits[0].recipe.label,
+                            recipe_image: data.hits[0].recipe.image,
+                            recipe_url: data.hits[0].recipe.shareAs,
                         }
                     ]
                 }).then(() => {
