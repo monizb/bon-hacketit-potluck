@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import bowl from "../Assets/pot3.png";
 import AppBar from "@material-ui/core/AppBar";
-import { getDatabase, ref, set, onValue, remove, update } from "firebase/database";
+import { getDatabase, ref, set, onValue, remove, update, push } from "firebase/database";
 import Alert from '@material-ui/lab/Alert';
 import { useAuth0 } from "@auth0/auth0-react";
 import MapPicker from 'react-google-map-picker'
 import Snackbar from '@material-ui/core/Snackbar';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import TextField from '@material-ui/core/TextField';
 
 function Pot() {
     const [pot, setPot] = useState({});
@@ -13,6 +19,13 @@ function Pot() {
     const [error, setError] = useState(false);
     const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
+    const [open2, setOpen2] = useState(false);
+    const [register, setRegister] = useState({
+        name: "",
+        email: "",
+        phone: "",
+        recipe_id: "",
+    });
     const { user } = useAuth0();
     useEffect(() => {
         //get pot id from url
@@ -63,29 +76,32 @@ function Pot() {
         //add user to pot
         const db = getDatabase();
         const potRef = ref(db, `pots/${pot.id}/attendees`);
-        update(potRef, {
-            uid: user.sub,
-            email: user.email,
-            name: user.name,
-            picture: user.picture
-        });
         let api = "https://api.edamam.com/api/recipes/v2?app_id=5d1711e6&app_key=450d6e433c71d7418e4a058cf0816e95&cuisineType=Indian&random=true&type=public"
         if (pot.veg) { api += "&health=vegetarian" }
         if (pot.assign) {
             fetch(api).then(res => res.json()).then(data => {
-                recipe = data.hits[0].recipe.uri.split("#")[1]
-                update(potRef, {
-                    uid: user.sub,
-                    email: user.email,
-                    name: user.name,
-                    picture: user.picture,
+                let recipe = data.hits[0].recipe.uri.split("#")[1]
+                push(potRef, {
+                    email: register.email,
+                    name: register.name,
+                    phone: register.phone,
                     recipe: JSON.stringify(data.hits[0].recipe),
-                    recipe_id: recipe
+                    recipe_id: recipe,
+                    recipe_name: data.hits[0].recipe.label,
+                    recipe_image: data.hits[0].recipe.image,
+                    recipe_url: data.hits[0].recipe.shareAs,
                 }).then(() => {
-                    window.location.href = "/pots/" + uuid;
+                    setOpen2(true);
+                    setOpen(false);
                 }
                 )
             })
+        } else {
+            push(potRef, register).then(() => {
+                setOpen2(true);
+                setOpen(false);
+            }
+            )
         }
     }
     return (
@@ -98,12 +114,34 @@ function Pot() {
                         <p>PotLuck</p>
                     </div>
                     <div>
-                        <button className='profilebutton'>Profile</button>
+                        <button className='profilebutton' onClick={() => window.location.href = "/profile"}>Profile</button>
                     </div>
                 </div>
             </AppBar>
-            <Snackbar open={open} autoHideDuration={3000} onClose={() => setOpen(false)}>
-                <Alert severity="success" onClose={() => setOpen(false)}>
+            <Dialog
+                open={open}
+                onClose={handleClose}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title" >
+                    Register For This Potluck</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        Fill out the below fields to register for this potluck.
+                    </DialogContentText>
+                    <TextField value={register.name} onChange={event => setRegister({ ...register, name: event.target.value })} variant="outlined" style={{ width: "100%", marginTop: 15 }} placeholder="Your Full Name" />
+                    <TextField value={register.email} onChange={event => setRegister({ ...register, email: event.target.value })} variant="outlined" style={{ width: "100%", marginTop: 15 }} placeholder="Your Email Address" />
+                    <TextField value={register.phone} onChange={event => setRegister({ ...register, phone: event.target.value })} variant="outlined" style={{ width: "100%", marginTop: 15 }} placeholder="Your Phone Number" />
+                </DialogContent>
+                <DialogActions>
+                    <button className='profilebutton' onClick={() => registerForPot()} >
+                        Register
+                    </button>
+                </DialogActions>
+            </Dialog>
+            <Snackbar open={open2} autoHideDuration={3000} onClose={() => setOpen2(false)}>
+                <Alert severity="success" onClose={() => setOpen2(false)}>
                     You have successfully registered for this potluck!
                 </Alert>
             </Snackbar>
@@ -126,7 +164,7 @@ function Pot() {
                     <p>{pot.description}</p>
                     <h4 style={{ backgroundColor: "#edf4f7", color: "#669FBD", padding: 5, height: "fit-content", borderRadius: 3, width: "fit-content" }}>{"Timings: " + pot.time[0] + " to " + pot.time[1]}</h4>
                     <h4 style={{ backgroundColor: "#edf4f7", color: "#669FBD", padding: 5, height: "fit-content", borderRadius: 3, width: "fit-content" }}>{"Date: " + pot.date}</h4>
-                    <h4 style={{ backgroundColor: "#edf4f7", color: "#669FBD", padding: 5, height: "fit-content", borderRadius: 3, width: "fit-content" }}>{pot.attendees.length + " people attending"}</h4>
+                    <h4 style={{ backgroundColor: "#edf4f7", color: "#669FBD", padding: 5, height: "fit-content", borderRadius: 3, width: "fit-content" }}>{Object.values(pot.attendees).length + " people attending"}</h4>
 
                     <h3 style={{ marginTop: 40 }}>{"Location"}</h3>
                     <MapPicker
@@ -145,12 +183,26 @@ function Pot() {
                         })}
                     </div> : null} */}
 
-                    {
-                        user !== undefined && pot.uid === user.sub ? <button className='profilebutton' style={{ marginTop: 30 }} onClick={() => deletePot()}>Delete This Pot</button> : null
-                    }
+
+
+                    <h3 style={{ marginTop: 40 }}>{"Attendees And Assigned Dishes"}</h3>
+                    {Object.values(pot.attendees).map((attendee) => {
+                        return (
+                            <div style={{ display: "flex", alignItems: "center", marginTop: 20 }}>
+
+                                <div style={{ marginLeft: 10 }}>
+                                    <h4>{attendee.name}</h4>
+                                    <p>{attendee.recipe_name}</p>
+                                    <img src={attendee.recipe_image} />
+                                    <p>{"Recipe Link: "}<a href={attendee.recipe_url}>{attendee.recipe_url}</a></p>
+                                </div>
+                            </div>
+                        )
+                    })}
+
 
                     {
-                        user !== undefined && pot.attendees.find(x => x.uid === user.sub) === null ? <button className='profilebutton' style={{ marginTop: 30 }} onClick={() => registerForPot()}>Register For This Pot Luck</button> : null
+                        user !== undefined && pot.uid === user.sub ? <button className='profilebutton' style={{ marginTop: 30 }} onClick={() => deletePot()}>Delete This Pot</button> : <button className='profilebutton' style={{ marginTop: 30 }} onClick={handleClickOpen}>Register For This Pot Luck</button>
                     }
 
 

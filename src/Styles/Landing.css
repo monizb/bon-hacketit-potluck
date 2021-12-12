@@ -35,6 +35,7 @@
     justify-content: center;
     background-color: #669FBD;
     padding: 20px;
+    text-align: center;
 }
 
 
@@ -64,5 +65,5 @@
 }
 
 .landimg {
-    width: 200px;
+    width: 600px;
 }
